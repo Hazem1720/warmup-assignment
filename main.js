@@ -139,7 +139,77 @@ function metQuota(date, activeTime) {
 // Returns: object with 10 properties or empty object {}
 // ============================================================
 function addShiftRecord(textFile, shiftObj) {
-    // TODO: Implement this function
+
+    let content = fs.readFileSync(textFile, "utf8");
+    let lines = content.trim().split("\n");
+
+    // 1️⃣ Check for duplicate (same driverID + date)
+    for (let line of lines) {
+
+        let parts = line.split(",");
+
+        let driverID = parts[0];
+        let date = parts[2];
+
+        if (driverID === shiftObj.driverID && date === shiftObj.date) {
+            return {};
+        }
+    }
+
+    // 2️⃣ Calculate values
+    let shiftDuration = getShiftDuration(shiftObj.startTime, shiftObj.endTime);
+    let idleTime = getIdleTime(shiftObj.startTime, shiftObj.endTime);
+    let activeTime = getActiveTime(shiftDuration, idleTime);
+    let met = metQuota(shiftObj.date, activeTime);
+
+    let newObj = {
+        driverID: shiftObj.driverID,
+        driverName: shiftObj.driverName,
+        date: shiftObj.date,
+        startTime: shiftObj.startTime,
+        endTime: shiftObj.endTime,
+        shiftDuration: shiftDuration,
+        idleTime: idleTime,
+        activeTime: activeTime,
+        metQuota: met,
+        hasBonus: false
+    };
+
+    // 3️⃣ Create new line for file
+    let newLine = [
+        newObj.driverID,
+        newObj.driverName,
+        newObj.date,
+        newObj.startTime,
+        newObj.endTime,
+        newObj.shiftDuration,
+        newObj.idleTime,
+        newObj.activeTime,
+        newObj.metQuota,
+        newObj.hasBonus
+    ].join(",");
+
+    // 4️⃣ Find last record of this driverID
+    let index = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+        let parts = lines[i].split(",");
+        if (parts[0] === shiftObj.driverID) {
+            index = i;
+        }
+    }
+
+    // 5️⃣ Insert correctly
+    if (index === -1) {
+        lines.push(newLine);
+    } else {
+        lines.splice(index + 1, 0, newLine);
+    }
+
+    // 6️⃣ Write back to file
+    fs.writeFileSync(textFile, lines.join("\n"));
+
+    return newObj;
 }
 
 // ============================================================
