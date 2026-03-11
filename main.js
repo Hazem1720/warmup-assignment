@@ -292,7 +292,46 @@ function countBonusPerMonth(textFile, driverID, month){
 // Returns: string formatted as hhh:mm:ss
 // ============================================================
 function getTotalActiveHoursPerMonth(textFile, driverID, month) {
-    // TODO: Implement this function
+
+    let data = fs.readFileSync(textFile, "utf8");
+    let lines = data.trim().split("\n");
+
+    let totalSeconds = 0;
+
+    // convert month to 2-digit string
+    month = month.toString().padStart(2, "0");
+
+    for (let i = 1; i < lines.length; i++) {
+
+        let row = lines[i].split(",");
+
+        let id = row[0];
+        let date = row[2];
+        let activeTime = row[7];
+
+        let rowMonth = date.split("-")[1];
+
+        if (id === driverID && rowMonth === month) {
+
+            let parts = activeTime.split(":");
+
+            let h = parseInt(parts[0]);
+            let m = parseInt(parts[1]);
+            let s = parseInt(parts[2]);
+
+            totalSeconds += h * 3600 + m * 60 + s;
+        }
+    }
+
+    // convert seconds back to hhh:mm:ss
+    let hours = Math.floor(totalSeconds / 3600);
+    let minutes = Math.floor((totalSeconds % 3600) / 60);
+    let seconds = totalSeconds % 60;
+
+    let mm = minutes.toString().padStart(2, "0");
+    let ss = seconds.toString().padStart(2, "0");
+
+    return `${hours}:${mm}:${ss}`;
 }
 
 // ============================================================
@@ -319,7 +358,6 @@ function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, mont
 function getNetPay(driverID, actualHours, requiredHours, rateFile) {
     // TODO: Implement this function
 }
-
 module.exports = {
     getShiftDuration,
     getIdleTime,
