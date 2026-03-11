@@ -114,9 +114,24 @@ function getActiveTime(shiftDuration, idleTime) {
 // Returns: boolean
 // ============================================================
 function metQuota(date, activeTime) {
-    // TODO: Implement this function
-}
 
+    function timeToSeconds(time) {
+        let parts = time.split(":").map(Number);
+        return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+
+    let activeSeconds = timeToSeconds(activeTime);
+
+    let quotaSeconds;
+
+    if (date >= "2025-04-10" && date <= "2025-04-30") {
+        quotaSeconds = timeToSeconds("6:00:00");
+    } else {
+        quotaSeconds = timeToSeconds("8:24:00");
+    }
+
+    return activeSeconds >= quotaSeconds;
+}
 // ============================================================
 // Function 5: addShiftRecord(textFile, shiftObj)
 // textFile: (typeof string) path to shifts text file
