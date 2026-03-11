@@ -344,7 +344,60 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
 // Returns: string formatted as hhh:mm:ss
 // ============================================================
 function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, month) {
-    // TODO: Implement this function
+
+    let shifts = fs.readFileSync(textFile, "utf8").trim().split("\n");
+    let rates = fs.readFileSync(rateFile, "utf8").trim().split("\n");
+
+    let dayOff = "";
+    let quota = 0;
+
+    // get driver info from rate file
+    for (let line of rates) {
+        let parts = line.split(",");
+        if (parts[0] === driverID) {
+            dayOff = parts[1];
+            quota = parseInt(parts[3]);
+        }
+    }
+
+    let totalSeconds = 0;
+
+    for (let i = 1; i < shifts.length; i++) {
+
+        let row = shifts[i].split(",");
+        let id = row[0];
+        let date = row[2];
+
+        if (id !== driverID) continue;
+
+        let m = parseInt(date.split("-")[1]);
+        if (m !== parseInt(month)) continue;
+
+        let day = new Date(date).toLocaleDateString("en-US", { weekday: "long" });
+
+        // skip day off
+        if (day === dayOff) continue;
+
+        let dailyQuota;
+
+        // Eid period
+        if (date >= "2025-04-10" && date <= "2025-04-30") {
+            dailyQuota = 6;
+        } else {
+            dailyQuota = quota;
+        }
+
+        totalSeconds += dailyQuota * 3600;
+    }
+
+    // reduce hours for bonuses
+    totalSeconds -= bonusCount * 2 * 3600;
+
+    let h = Math.floor(totalSeconds / 3600);
+    let m = Math.floor((totalSeconds % 3600) / 60);
+    let s = totalSeconds % 60;
+
+    return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
 }
 
 // ============================================================
