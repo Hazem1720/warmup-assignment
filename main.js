@@ -1,14 +1,36 @@
 const fs = require("fs");
 
-// ============================================================
-// Function 1: getShiftDuration(startTime, endTime)
-// startTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
-// endTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
-// Returns: string formatted as h:mm:ss
-// ============================================================
 function getShiftDuration(startTime, endTime) {
-    // TODO: Implement this function
+
+    function toSeconds(time) {
+        time = time.trim().toLowerCase();
+        let [clock, period] = time.split(" ");
+        let [h, m, s] = clock.split(":").map(Number);
+
+        if (period === "pm" && h !== 12) h += 12;
+        if (period === "am" && h === 12) h = 0;
+
+        return h * 3600 + m * 60 + s;
+    }
+
+    let start = toSeconds(startTime);
+    let end = toSeconds(endTime);
+
+    let diff = end - start;
+
+    // FIX for overnight shift
+    if (diff < 0) diff += 24 * 3600;
+
+    let h = Math.floor(diff / 3600);
+    let m = Math.floor((diff % 3600) / 60);
+    let s = diff % 60;
+
+    m = String(m).padStart(2, "0");
+    s = String(s).padStart(2, "0");
+
+    return `${h}:${m}:${s}`;
 }
+
 
 // ============================================================
 // Function 2: getIdleTime(startTime, endTime)
