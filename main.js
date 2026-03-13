@@ -266,12 +266,12 @@ function countBonusPerMonth(textFile, driverID, month){
 
         let row = lines[i].split(",");
 
-        if(row[0] === driverID){
+        if(row[0].trim() === driverID){
             driverExists = true;
 
             let rowMonth = row[2].split("-")[1];
 
-            if(rowMonth === month && row[9] === "true"){
+            if(rowMonth === month && row[9].trim() === "true"){ // ✅ added .trim()
                 count++;
             }
         }
@@ -283,7 +283,6 @@ function countBonusPerMonth(textFile, driverID, month){
 
     return count;
 }
-
 // ============================================================
 // Function 8: getTotalActiveHoursPerMonth(textFile, driverID, month)
 // textFile: (typeof string) path to shifts text file
